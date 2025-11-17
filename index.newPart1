@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Notes & Lecture Manager - Main</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f3f4f6;
+    }
+
+    header {
+      background: #0d6efd;
+      padding: 18px;
+      color: white;
+      text-align: center;
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .frame-box {
+      margin-top: 20px;
+      border: 2px solid #0d6efd;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>Notes & Lecture Manager (Main Page)</header>
+
+<div class="container">
+
+  <h2>📌 Loaded Files (Part 2 & Part 3)</h2>
+
+  <!-- Load Part 2 -->
+  <div class="frame-box">
+    <h3 style="padding:10px; background:#dbeafe; margin:0;">Part 2 Loaded Below 👇</h3>
+    <iframe src="part2.html"></iframe>
+  </div>
+
+  <!-- Load Part 3 -->
+  <div class="frame-box">
+    <h3 style="padding:10px; background:#d1fae5; margin:0;">Part 3 Loaded Below 👇</h3>
+    <iframe src="part3.html"></iframe>
+  </div>
+
+</div>
+
+</body>
+</html>

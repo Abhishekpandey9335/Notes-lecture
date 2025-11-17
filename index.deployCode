@@ -360,18 +360,9 @@ function refreshUI(){
     const btnDel = document.createElement('button');
     btnDel.className='btn-ghost';
     btnDel.innerText='Delete';
+    btnDel.onclick = ()=>{ if(isAdmin && confirm('Delete lecture?')) deleteLecture(l.id); };
 
-
-
-
-   // btnDel.onclick = ()=>{ if(isAdmin && confirm('Delete lecture?')) deleteLecture(l.id); };
-
-   
-   
-   
-   
-   
-   if(!isAdmin){
+    if(!isAdmin){
       btnNote.disabled = true;
       btnDel.style.display = "none";
     }
