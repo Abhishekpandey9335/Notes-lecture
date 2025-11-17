@@ -6,7 +6,7 @@
   <title>Lectures & Notes — Professional Portal</title>
 
 <style>
-/* ALL YOUR EXISTING CSS — No changes made */
+/* ALL YOUR EXISTING CSS — No changes made (plus a few small additions for modals/buttons) */
 :root{
   --bg:#f3f6fb; --card:#ffffff; --brand:#0b5fff; --muted:#6b7280; --glass: rgba(11,95,255,0.06);
   --radius:12px; --gap:18px; --maxw:1100px;
@@ -26,6 +26,7 @@ header h1{font-size:20px; margin:0; display:flex;gap:10px; align-items:center}
 header h1 .logo{background:rgba(255,255,255,0.14); padding:8px 10px; border-radius:8px; font-weight:700}
 header .actions{display:flex; gap:12px; align-items:center}
 header .btn{background:rgba(255,255,255,0.14); color:white; padding:10px 14px; border-radius:10px; border:none; cursor:pointer}
+.header-user{display:flex; gap:8px; align-items:center}
 
 .container{max-width:var(--maxw); margin:28px auto; padding:0 18px}
 
@@ -35,7 +36,7 @@ header .btn{background:rgba(255,255,255,0.14); color:white; padding:10px 14px; b
 .sidebar h2{margin:2px 0 12px 0}
 .form-row{margin-bottom:12px}
 label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px}
-input[type=text], textarea, select{width:100%; padding:10px 12px; border-radius:10px; border:1px solid #e6eefb; background:#fbfdff}
+input[type=text], input[type=email], input[type=password], textarea, select{width:100%; padding:10px 12px; border-radius:10px; border:1px solid #e6eefb; background:#fbfdff}
 textarea{min-height:90px; resize:vertical}
 
 .btn-primary{background:var(--brand); color:white; border:none; padding:10px 14px; border-radius:10px; cursor:pointer}
@@ -57,34 +58,29 @@ textarea{min-height:90px; resize:vertical}
 .note-item{background:#fbfdff; border-radius:10px; padding:10px; border:1px solid #eef5ff}
 
 footer{max-width:var(--maxw); margin:18px auto; padding:18px; color:var(--muted); text-align:center}
+
+/* Modal / overlay screens */
+.overlay-screen{
+  position:fixed; inset:0; background:rgba(10,12,20,0.45);
+  display:flex; align-items:center; justify-content:center; z-index:9998;
+}
+.modal{
+  width:360px; background:#fff; padding:22px; border-radius:12px; box-shadow:0 10px 30px rgba(2,6,23,0.25);
+}
+.modal h2{margin-top:0; margin-bottom:12px}
+.small{font-size:12px}
+.switch-link{color:var(--brand); cursor:pointer; text-decoration:underline; font-size:13px}
+
+/* small responsive */
+@media (max-width:900px){
+  .grid{grid-template-columns:1fr; padding-bottom:40px}
+  .container{padding:0 12px}
+  .modal{width:92%}
+}
 </style>
 
 </head>
 <body>
-
-<!-- ================================ -->
-<!-- 🔐 ADMIN LOGIN SCREEN ADDED HERE -->
-<!-- ================================ -->
-<div id="adminLoginScreen" style="
-  position:fixed; inset:0; background:white; 
-  display:flex; align-items:center; justify-content:center;
-  z-index:9999;">
-  <div style="
-      background:#fff; padding:30px; border-radius:12px;
-      box-shadow:0 6px 20px rgba(0,0,0,0.15); width:300px;">
-    <h2 style="margin-top:0">Admin Login</h2>
-    <input id="adminPasswordInput" type="password" placeholder="Enter admin password"
-      style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
-    <button id="adminLoginBtn" style="
-        width:100%; margin-top:12px; padding:10px;
-        background:#0b5fff; border:none; border-radius:8px; color:white; cursor:pointer;">
-      Login
-    </button>
-    <p id="adminErr" style="color:red; margin-top:8px;"></p>
-  </div>
-</div>
-<!-- END ADMIN LOGIN -->
-
 
 <header>
   <div class="wrap">
@@ -92,15 +88,16 @@ footer{max-width:var(--maxw); margin:18px auto; padding:18px; color:var(--muted)
     <div class="actions">
       <button class="btn" id="exportAllBtn">Export All Notes</button>
       <button class="btn" id="clearBtn">Clear Local Data</button>
+      <div class="header-user" id="headerUserArea" style="display:none">
+        <div id="currentUserLabel" style="font-size:14px; color:white; opacity:0.95;"></div>
+        <button class="btn" id="logoutBtn">Logout</button>
+        <button class="btn" id="showAdminBtn">Admin Login</button>
+      </div>
     </div>
   </div>
 </header>
 
 <main class="container">
-  <!-- your UI continues… (NO CHANGES DONE HERE) -->
-  <!-- I kept your full UI identical -->
-  <!-- ------------------------------ -->
-
   <div class="grid">
       <aside class="sidebar">
         <h2>Create Lecture</h2>
@@ -181,50 +178,234 @@ footer{max-width:var(--maxw); margin:18px auto; padding:18px; color:var(--muted)
 
 <footer>Made with care — store sensitive or large files elsewhere.</footer>
 
+<!-- ================================ -->
+<!-- USER AUTH (Register / Login) SCREEN -->
+<!-- ================================ -->
+<div id="userAuthScreen" class="overlay-screen" style="display:flex;">
+  <div class="modal" id="authModal">
+    <div id="authContent">
+      <!-- Will be injected: login or register form -->
+    </div>
+  </div>
+</div>
+
+<!-- ================================ -->
+<!-- 🔐 ADMIN LOGIN SCREEN (hidden until user clicks Admin Login) -->
+<!-- ================================ -->
+<div id="adminLoginScreen" class="overlay-screen" style="display:none;">
+  <div class="modal">
+    <h2>Admin Login</h2>
+    <input id="adminPasswordInput" type="password" placeholder="Enter admin password"
+      style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+    <button id="adminLoginBtn" class="btn-primary" style="width:100%; margin-top:12px;">Login as Admin</button>
+    <p id="adminErr" style="color:red; margin-top:8px;"></p>
+    <div style="margin-top:10px; text-align:right">
+      <button id="closeAdminModal" class="btn-ghost">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* =======================================================
-   🔐 ADMIN LOGIN FUNCTIONALITY ADDED HERE
+   FULL INTEGRATION: User Register/Login + Admin Login
    ======================================================= */
-const ADMIN_PASSWORD = "mypassword123";   // CHANGE PASSWORD HERE
-let isAdmin = false;
 
-// Buttons to disable when not admin
-function disableAdminUI(){
-  addLectureBtn.disabled = true;
-  addNoteBtn.disabled = true;
-  clearBtn.disabled = true;
-  addSample.disabled = true;
+/* ---------------------------
+   Configuration & storage keys
+   --------------------------- */
+const ADMIN_PASSWORD = "mypassword123";   // change admin password here
+const USERS_KEY = 'ln_users';
+const SESSION_USER_KEY = 'ln_currentUser';
+const SESSION_IS_ADMIN = 'ln_isAdmin';
+
+/* ---------------------------
+   Utility helpers
+   --------------------------- */
+function getUsers(){
+  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '[]'); }
+  catch(e){ return []; }
 }
+function saveUsers(u){ localStorage.setItem(USERS_KEY, JSON.stringify(u)); }
 
-// Enable after login
-function enableAdminUI(){
-  addLectureBtn.disabled = false;
-  addNoteBtn.disabled = false;
-  clearBtn.disabled = false;
-  addSample.disabled = false;
+function setCurrentUser(email){
+  localStorage.setItem(SESSION_USER_KEY, email || '');
+  renderHeaderUser();
 }
+function getCurrentUser(){
+  const email = localStorage.getItem(SESSION_USER_KEY) || '';
+  if(!email) return null;
+  const u = getUsers().find(x=>x.email===email);
+  return u || null;
+}
+function setIsAdmin(flag){
+  localStorage.setItem(SESSION_IS_ADMIN, flag ? '1': '');
+  isAdmin = !!flag;
+  enableAdminUIIfNeeded();
+  refreshUI();
+}
+function getIsAdmin(){ return !!localStorage.getItem(SESSION_IS_ADMIN); }
 
-// On login click
-document.getElementById("adminLoginBtn").onclick = () => {
-  const pwd = document.getElementById("adminPasswordInput").value;
-  if (pwd === ADMIN_PASSWORD) {
-    isAdmin = true;
-    document.getElementById("adminLoginScreen").style.display = "none";
-    enableAdminUI();
-    refreshUI();
+/* ---------------------------
+   Auth modal render & logic
+   --------------------------- */
+const userAuthScreen = document.getElementById('userAuthScreen');
+const authContent = document.getElementById('authContent');
+
+function renderAuth(mode='login', msg=''){
+  // mode = 'login' or 'register'
+  if(mode === 'login'){
+    authContent.innerHTML = `
+      <h2>Member Login</h2>
+      <div style="margin-bottom:10px; color:var(--muted)">Please sign in to continue</div>
+      <input id="authEmail" type="email" placeholder="Email" style="width:100%; padding:10px; border-radius:8px; margin-bottom:8px;">
+      <input id="authPassword" type="password" placeholder="Password" style="width:100%; padding:10px; border-radius:8px;">
+      <div id="authMsg" style="color:red; margin-top:8px">${msg}</div>
+      <button id="doLogin" class="btn-primary" style="width:100%; margin-top:12px;">Login</button>
+      <div style="margin-top:10px; text-align:center;">
+        <span class="small">Don't have an account? <span class="switch-link" id="toRegister">Register</span></span>
+      </div>
+    `;
+    document.getElementById('toRegister').onclick = ()=> renderAuth('register');
+    document.getElementById('doLogin').onclick = doLogin;
   } else {
-    document.getElementById("adminErr").innerText = "Incorrect password!";
+    authContent.innerHTML = `
+      <h2>Create Account</h2>
+      <div style="margin-bottom:10px; color:var(--muted)">Register to access the portal</div>
+      <input id="regName" type="text" placeholder="Full name" style="width:100%; padding:10px; border-radius:8px; margin-bottom:8px;">
+      <input id="regEmail" type="email" placeholder="Email" style="width:100%; padding:10px; border-radius:8px; margin-bottom:8px;">
+      <input id="regPassword" type="password" placeholder="Password" style="width:100%; padding:10px; border-radius:8px; margin-bottom:8px;">
+      <input id="regPassword2" type="password" placeholder="Confirm password" style="width:100%; padding:10px; border-radius:8px;">
+      <div id="authMsg" style="color:red; margin-top:8px"></div>
+      <button id="doRegister" class="btn-primary" style="width:100%; margin-top:12px;">Register</button>
+      <div style="margin-top:10px; text-align:center;">
+        <span class="small">Already have an account? <span class="switch-link" id="toLogin">Login</span></span>
+      </div>
+    `;
+    document.getElementById('toLogin').onclick = ()=> renderAuth('login');
+    document.getElementById('doRegister').onclick = doRegister;
   }
+}
+
+function doRegister(){
+  const name = document.getElementById('regName').value.trim();
+  const email = (document.getElementById('regEmail').value || '').trim().toLowerCase();
+  const pw = document.getElementById('regPassword').value;
+  const pw2 = document.getElementById('regPassword2').value;
+  const msg = document.getElementById('authMsg');
+
+  if(!name || !email || !pw) { msg.innerText = "Please fill all fields."; return; }
+  if(pw !== pw2){ msg.innerText = "Passwords don't match."; return; }
+
+  const users = getUsers();
+  if(users.find(u=>u.email===email)){ msg.innerText = "Email already registered."; return; }
+
+  // store as simple object (local only). For slightly safer storage we could base64 pw, but it's still local.
+  users.push({ name, email, password: pw });
+  saveUsers(users);
+
+  setCurrentUser(email);
+  setIsAdmin(false);
+  userAuthScreen.style.display = 'none';
+  alert("Account created — you're now logged in.");
+  refreshUI();
+}
+
+function doLogin(){
+  const email = (document.getElementById('authEmail').value || '').trim().toLowerCase();
+  const pw = document.getElementById('authPassword').value;
+  const msg = document.getElementById('authMsg');
+
+  const users = getUsers();
+  const u = users.find(x=>x.email===email && x.password===pw);
+  if(!u){ msg.innerText = "Invalid credentials."; return; }
+
+  setCurrentUser(email);
+  setIsAdmin(false);
+  userAuthScreen.style.display = 'none';
+  alert("Welcome back, " + u.name + "!");
+  refreshUI();
+}
+
+/* ---------------------------
+   Header / Admin button & session
+   --------------------------- */
+const headerUserArea = document.getElementById('headerUserArea');
+const currentUserLabel = document.getElementById('currentUserLabel');
+const logoutBtn = document.getElementById('logoutBtn');
+const showAdminBtn = document.getElementById('showAdminBtn');
+
+logoutBtn.onclick = ()=>{
+  // logging out removes admin privilege but keeps users in storage
+  setCurrentUser('');
+  setIsAdmin(false);
+  // show auth screen again
+  renderAuth('login');
+  userAuthScreen.style.display = 'flex';
 };
 
-// Initially disable everything
-window.onload = disableAdminUI;
+showAdminBtn.onclick = ()=>{
+  // only allow opening admin modal if a user is logged in
+  const u = getCurrentUser();
+  if(!u){ alert("Please login as a user first."); return; }
+  document.getElementById('adminErr').innerText = '';
+  document.getElementById('adminPasswordInput').value = '';
+  document.getElementById('adminLoginScreen').style.display = 'flex';
+};
 
+function renderHeaderUser(){
+  const u = getCurrentUser();
+  if(u){
+    headerUserArea.style.display = 'flex';
+    currentUserLabel.innerText = u.name + " (" + u.email + ")";
+  } else {
+    headerUserArea.style.display = 'none';
+    currentUserLabel.innerText = '';
+  }
+}
 
-/* ============================
-   YOUR ORIGINAL FULL SCRIPT
-   (no changes except admin check)
-   ============================ */
+/* ---------------------------
+   Admin login modal behavior
+   --------------------------- */
+let isAdmin = false;
+const adminLoginBtn = document.getElementById('adminLoginBtn');
+const closeAdminModal = document.getElementById('closeAdminModal');
+
+adminLoginBtn.onclick = ()=>{
+  const pwd = document.getElementById('adminPasswordInput').value;
+  if(pwd === ADMIN_PASSWORD){
+    setIsAdmin(true);
+    document.getElementById('adminLoginScreen').style.display = 'none';
+    alert("Admin mode enabled for this session.");
+  } else {
+    document.getElementById('adminErr').innerText = "Incorrect password!";
+  }
+};
+closeAdminModal.onclick = ()=> document.getElementById('adminLoginScreen').style.display = 'none';
+
+/* ---------------------------
+   Ensure site locked until user logs in
+   --------------------------- */
+function ensureAuthOnLoad(){
+  const u = getCurrentUser();
+  const adminFlag = getIsAdmin();
+  if(u){
+    // user session exists
+    isAdmin = !!adminFlag;
+    userAuthScreen.style.display = 'none';
+    renderHeaderUser();
+    enableAdminUIIfNeeded();
+  } else {
+    // show auth screen
+    renderAuth('login');
+    userAuthScreen.style.display = 'flex';
+    // hide admin modal initially
+    document.getElementById('adminLoginScreen').style.display = 'none';
+  }
+}
+
+/* =======================================================
+   ORIGINAL APP LOGIC (mostly unchanged) with admin checks
+   ======================================================= */
 
 const DB_NAME = 'LectureDB_v1';
 const DB_STORE = 'videos';
@@ -302,19 +483,20 @@ function refreshUI(){
 
   attachLecture.innerHTML =
     '<option value="">(none) — general note</option>' +
-    lectures.map(l=>`<option value="${l.id}">${l.title}</option>`).join('');
+    lectures.map(l=>`<option value="${l.id}">${escapeHtml(l.title)}</option>`).join('');
 
   const q = (searchInput.value||'').toLowerCase();
   lecturesContainer.innerHTML = '';
 
+  // reverse so newest first
   lectures.slice().reverse().forEach(async l=>{
     if(!(l.title + l.desc).toLowerCase().includes(q)) return;
 
     const card = document.createElement('article'); 
     card.className='card';
 
-    card.innerHTML += `<h3>${l.title}</h3>`;
-    card.innerHTML += `<div class="meta">${l.desc}</div>`;
+    card.innerHTML += `<h3>${escapeHtml(l.title)}</h3>`;
+    card.innerHTML += `<div class="meta">${escapeHtml(l.desc || '')}</div>`;
 
     const vwrap = document.createElement('div');
     vwrap.className = 'video-wrap';
@@ -323,6 +505,9 @@ function refreshUI(){
       const iframe = document.createElement('iframe');
       iframe.src = youtubeToEmbed(l.src);
       iframe.allowFullscreen = true;
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border= '0';
       vwrap.appendChild(iframe);
     } else {
       const rec = await getBlob(l.blobId);
@@ -330,7 +515,11 @@ function refreshUI(){
         const vid = document.createElement('video');
         vid.controls = true;
         vid.src = URL.createObjectURL(rec.blob);
+        vid.style.maxWidth = '100%';
+        vid.style.maxHeight = '100%';
         vwrap.appendChild(vid);
+      } else {
+        vwrap.innerText = "Video unavailable";
       }
     }
     card.appendChild(vwrap);
@@ -350,9 +539,10 @@ function refreshUI(){
       if(l.source === 'youtube') window.open(l.src);
       else{
         const rec = await getBlob(l.blobId);
+        if(!rec || !rec.blob){ alert("Video not found"); return; }
         const a = document.createElement('a');
         a.href = URL.createObjectURL(rec.blob);
-        a.download = rec.filename;
+        a.download = rec.filename || 'video.mp4';
         a.click();
       }
     };
@@ -360,18 +550,10 @@ function refreshUI(){
     const btnDel = document.createElement('button');
     btnDel.className='btn-ghost';
     btnDel.innerText='Delete';
+    btnDel.onclick = ()=>{ if(isAdmin && confirm('Delete lecture?')) deleteLecture(l.id); };
 
-
-
-
-   // btnDel.onclick = ()=>{ if(isAdmin && confirm('Delete lecture?')) deleteLecture(l.id); };
-
-   
-   
-   
-   
-   
-   if(!isAdmin){
+    // enforce admin visibility on UI
+    if(!isAdmin){
       btnNote.disabled = true;
       btnDel.style.display = "none";
     }
@@ -388,9 +570,9 @@ function refreshUI(){
     div.className='note-item';
 
     div.innerHTML = `
-      <strong>${n.title}</strong>
-      <div class="small muted">${n.lectureTitle || 'General note'}</div>
-      <div>${n.content}</div>
+      <strong>${escapeHtml(n.title)}</strong>
+      <div class="small muted">${escapeHtml(n.lectureTitle || 'General note')}</div>
+      <div>${escapeHtml(n.content).replace(/\n/g,'<br>')}</div>
     `;
 
     const row = document.createElement('div');
@@ -413,6 +595,21 @@ function refreshUI(){
   });
 }
 
+function enableAdminUIIfNeeded(){
+  // called after isAdmin toggles and on load
+  if(isAdmin){
+    addLectureBtn.disabled = false;
+    addNoteBtn.disabled = false;
+    clearBtn.disabled = false;
+    addSample.disabled = false;
+  } else {
+    addLectureBtn.disabled = true;
+    addNoteBtn.disabled = true;
+    clearBtn.disabled = true;
+    addSample.disabled = true;
+  }
+}
+
 function persist(){
   localStorage.setItem('lectures', JSON.stringify(lectures));
   localStorage.setItem('notes', JSON.stringify(notes));
@@ -422,7 +619,6 @@ function uid(){ return Date.now().toString(36) + Math.random().toString(36).slic
 
 addLectureBtn.onclick = async()=>{
   if(!isAdmin) return alert("Admins only!");
-
   const title = lectureTitle.value.trim();
   if(!title) return alert("Add title");
 
@@ -433,6 +629,7 @@ addLectureBtn.onclick = async()=>{
     refreshUI();
   } else {
     const file = videoFile.files[0];
+    if(!file) return alert("Select a file");
     const blobId = await storeBlob(file, {filename:file.name});
     lectures.push({ id:uid(), title, desc:lectureDesc.value, source:"local", blobId });
     persist();
@@ -449,14 +646,15 @@ function deleteLecture(id){
 
 addNoteBtn.onclick = ()=>{
   if(!isAdmin) return alert("Admins only!");
-
   const t = noteTitle.value.trim();
   const c = noteContent.value.trim();
   const lid = attachLecture.value;
 
-  const ltitle = lid ? lectures.find(l=>l.id===lid)?.title : "(none)";
+  if(!t && !c) return alert("Note empty");
 
-  notes.push({ id:uid(), title:t, content:c, lectureId:lid, lectureTitle:ltitle });
+  const ltitle = lid ? (lectures.find(l=>l.id===lid)?.title || "(none)") : "(none)";
+
+  notes.push({ id:uid(), title:t || 'Untitled', content:c, lectureId:lid, lectureTitle:ltitle });
   persist();
   refreshUI();
 };
@@ -472,7 +670,7 @@ function downloadNote(id){
   const blob = new Blob([n.content], {type:'text/plain'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = n.title + ".txt";
+  a.download = (n.title || 'note') + ".txt";
   a.click();
 }
 
@@ -488,7 +686,8 @@ exportAllBtn.onclick = ()=>{
 clearBtn.onclick = ()=>{
   if(!isAdmin) return alert("Admins only!");
   if(confirm("Clear all data?")){
-    localStorage.clear();
+    localStorage.removeItem('lectures');
+    localStorage.removeItem('notes');
     indexedDB.deleteDatabase(DB_NAME);
     lectures=[]; notes=[];
     refreshUI();
@@ -505,23 +704,28 @@ addSample.onclick = ()=>{
 };
 
 function youtubeToEmbed(url){
+  if(!url) return '';
   if(url.includes("embed")) return url;
   const m = url.match(/v=([^&]+)/) || url.match(/youtu.be\/([^?]+)/);
   return m ? "https://www.youtube.com/embed/" + m[1] : url;
 }
 
-refreshUI();
+/* small helper to escape HTML for safe rendering */
+function escapeHtml(str){
+  if(!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
-
-
-
-
-
-
-
-
-
-
+/* initial load */
+window.onload = ()=>{
+  ensureAuthOnLoad();
+  openDB().then(()=>{ refreshUI(); });
+};
 </script>
 
 </body>
