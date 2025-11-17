@@ -1,0 +1,49 @@
+        //  ============================
+        //  LECTURE VIDEO DELETE (ADMIN ONLY)
+        //  ============================
+
+        function deleteVideo(index) {
+            if (!isAdmin) {
+                alert("Only admin can delete videos!");
+                return;
+            }
+
+            if (confirm("Are you sure want to delete this lecture video?")) {
+                lectures.splice(index, 1);
+                localStorage.setItem("lectures", JSON.stringify(lectures));
+                renderLectures();
+            }
+        }
+
+        // Render all lecture videos
+        function renderLectures() {
+            const videoList = document.getElementById("video-list");
+            videoList.innerHTML = "";
+
+            lectures.forEach((video, index) => {
+                videoList.innerHTML += `
+                    <div class="video-card">
+                        <iframe width="100%" height="220" src="${video.link}" frameborder="0" allowfullscreen></iframe>
+                        <h4>${video.title}</h4>
+                        <button class="download-btn" onclick="downloadVideo('${video.link}')">Download Video</button>
+                        ${
+                            isAdmin
+                                ? `<button class="delete-btn" onclick="deleteVideo(${index})">❌ Delete</button>`
+                                : ``
+                        }
+                    </div>
+                `;
+            });
+        }
+
+        // Download video (opens in new tab)
+        function downloadVideo(url) {
+            window.open(url, "_blank");
+        }
+
+        // Initial render
+        renderNotes();
+        renderLectures();
+    </script>
+</body>
+</html>

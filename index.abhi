@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Notes & Lectures Manager</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    /* --------- Corporate Styling --------- */
+    body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f7fb;
+        margin: 0;
+        padding: 0;
+        color: #333;
+    }
+
+    header {
+        background: #003366;
+        padding: 20px;
+        color: white;
+        text-align: center;
+        font-size: 26px;
+        font-weight: bold;
+        letter-spacing: 1px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+
+    .container {
+        width: 90%;
+        max-width: 1100px;
+        margin: 30px auto;
+    }
+
+    .input-box {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.1);
+        margin-bottom: 30px;
+    }
+
+    .input-box input, .input-box textarea {
+        width: 100%;
+        margin: 8px 0;
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        font-size: 16px;
+        outline: none;
+        transition: 0.3s;
+    }
+
+    .input-box input:focus, .input-box textarea:focus {
+        border-color: #003366;
+    }
+
+    button {
+        padding: 12px 20px;
+        border: none;
+        background: #003366;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 16px;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background: #0055aa;
+    }
+
+    /* Notes Grid */
+    .notes-area {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .note-card {
+        background: white;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        position: relative;
+        transition: 0.3s;
+    }
+
+    .note-card:hover {
+        transform: translateY(-4px);
+    }
+
+    .note-actions {
+        margin-top: 10px;
+    }
+
+    .note-actions button {
+        margin-right: 8px;
+        padding: 10px 14px;
+        font-size: 14px;
+    }
+
+    /* Search Bar */
+    .search-box input {
+        width: 100%;
+        padding: 14px;
+        border-radius: 10px;
+        border: 1px solid #999;
+        margin-bottom: 25px;
+        font-size: 16px;
+    }
+</style>
+
+</head>
+<body>
+
+<header>📚 Notes & Lectures Manager</header>
+
+<div class="container">
+
+    <!-- Search Box -->
+    <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search your notes..." onkeyup="searchNotes()">
+    </div>
+
+    <!-- Input Section -->
+    <div class="input-box">
+        <h2>Add New Note</h2>
+
+        <input type="text" id="noteTitle" placeholder="Enter Note Title">
+        <textarea id="noteContent" rows="5" placeholder="Write your lecture or notes here..."></textarea>
+
+        <br>
+        <button onclick="addNote()">Add Note</button>
+    </div>
+
+    <!-- Notes Display -->
+    <div class="notes-area" id="notesArea"></div>
+
+</div>
+
+<script>
+    let notes = JSON.parse(localStorage.getItem("notes")) || [];
+
+    // Load notes on startup
+    window.onload = function () {
+        displayNotes();
+    };
+
+    // Add New Note
+    function addNote() {
+        let title = document.getElementById("noteTitle").value;
+        let content = document.getElementById("noteContent").value;
+
+        if (title.trim() === "" || content.trim() === "") {
+            alert("Please fill all fields!");
+            return;
+        }
+
+        notes.push({ title, content });
+        localStorage.setItem("notes", JSON.stringify(notes));
+
+        document.getElementById("noteTitle").value = "";
+        document.getElementById("noteContent").value = "";
+
+        displayNotes();
+    }
+
+    // Display Notes
+    function displayNotes() {
+        let area = document.getElementById("notesArea");
+        area.innerHTML = "";
+
+        notes.forEach((note, index) => {
+            area.innerHTML += `
+                <div class="note-card">
+                    <h3>${note.title}</h3>
+                    <p>${note.content}</p>
+
+                    <div class="note-actions">
+                        <button onclick="downloadNote(${index})">Download</button>
+                        <button onclick="deleteNote(${index})" style="background:#cc0000">Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // Delete Note
+    function deleteNote(index) {
+        if (confirm("Do you want to delete this note?")) {
+            notes.splice(index, 1);
+            localStorage.setItem("notes", JSON.stringify(notes));
+            displayNotes();
+        }
+    }
+
+    // Download note as .txt
+    function downloadNote(index) {
+        const note = notes[index];
+        const text = `Title: ${note.title}\n\n${note.content}`;
+
+        const blob = new Blob([text], { type: "text/plain" });
+        const link = document.createElement("a");
+
+        link.href = URL.createObjectURL(blob);
+        link.download = `${note.title}.txt`;
+        link.click();
+    }
+
+    // Search Notes
+    function searchNotes() {
+        let value = document.getElementById("searchInput").value.toLowerCase();
+        let cards = document.getElementsByClassName("note-card");
+
+        for (let i = 0; i < cards.length; i++) {
+            let title = cards[i].getElementsByTagName("h3")[0].innerText.toLowerCase();
+            let content = cards[i].getElementsByTagName("p")[0].innerText.toLowerCase();
+
+            if (title.includes(value) || content.includes(value)) {
+                cards[i].style.display = "block";
+            } else {
+                cards[i].style.display = "none";
+            }
+        }
+    }
+</script>
+
+</body>
+</html>

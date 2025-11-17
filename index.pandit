@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lectures & Notes — Professional Portal</title>
+  <style>
+    :root{
+      --bg:#f3f6fb; --card:#ffffff; --brand:#0b5fff; --muted:#6b7280; --glass: rgba(11,95,255,0.06);
+      --radius:12px; --gap:18px; --maxw:1100px;
+      font-synthesis: none;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background: linear-gradient(180deg,#f7f9ff 0%, #f3f6fb 100%); color:#111827; -webkit-font-smoothing:antialiased;
+    }
+    header{
+      background:linear-gradient(90deg,var(--brand), #2b6cff);
+      color:white; padding:22px 20px; box-shadow:0 6px 22px rgba(11,95,255,0.12);
+    }
+    header .wrap{max-width:var(--maxw); margin:0 auto; display:flex;gap:12px; align-items:center; justify-content:space-between}
+    header h1{font-size:20px; margin:0; display:flex;gap:10px; align-items:center}
+    header h1 .logo{background:rgba(255,255,255,0.14); padding:8px 10px; border-radius:8px; font-weight:700}
+    header .actions{display:flex; gap:12px; align-items:center}
+    header .btn{background:rgba(255,255,255,0.14); color:white; padding:10px 14px; border-radius:10px; border:none; cursor:pointer}
+
+    .container{max-width:var(--maxw); margin:28px auto; padding:0 18px}
+
+    .grid{display:grid; grid-template-columns:360px 1fr; gap:var(--gap)}
+
+    /* Sidebar */
+    .sidebar{background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:0 6px 18px rgba(12,18,37,0.06)}
+    .sidebar h2{margin:2px 0 12px 0}
+    .form-row{margin-bottom:12px}
+    label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px}
+    input[type=text], textarea, select{width:100%; padding:10px 12px; border-radius:10px; border:1px solid #e6eefb; background:#fbfdff}
+    textarea{min-height:90px; resize:vertical}
+    .small{font-size:13px; color:var(--muted)}
+    .btn-primary{background:var(--brand); color:white; border:none; padding:10px 14px; border-radius:10px; cursor:pointer}
+    .btn-ghost{background:transparent; border:1px solid #e7eefc; color:var(--brand); padding:10px 12px; border-radius:10px; cursor:pointer}
+    .muted{color:var(--muted)}
+
+    /* Main */
+    .main{display:flex; flex-direction:column; gap:var(--gap)}
+
+    .searchbar{display:flex; gap:12px; align-items:center}
+    .searchbar input{flex:1; padding:12px 14px; border-radius:12px; border:1px solid #e3e9f8}
+
+    .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px}
+    .card{background:var(--card); border-radius:12px; padding:14px; box-shadow:0 6px 18px rgba(13,24,50,0.04); display:flex; flex-direction:column}
+    .card h3{margin:0 0 8px 0}
+    .meta{font-size:13px; color:var(--muted); margin-bottom:8px}
+
+    .video-wrap{background:#0f1724; border-radius:10px; overflow:hidden; height:190px; display:flex; align-items:center; justify-content:center}
+    .video-wrap video, .video-wrap iframe{width:100%; height:100%; object-fit:cover}
+
+    .card .actions{margin-top:auto; display:flex; gap:8px}
+    .pill{background:var(--glass); padding:6px 10px; border-radius:999px; font-size:13px}
+
+    .notes-area{display:flex; flex-direction:column; gap:12px}
+    .note-item{background:#fbfdff; border-radius:10px; padding:10px; border:1px solid #eef5ff}
+
+    footer{max-width:var(--maxw); margin:18px auto; padding:18px; color:var(--muted); text-align:center}
+
+    /* responsive */
+    @media (max-width:980px){.grid{grid-template-columns:1fr;}.video-wrap{height:240px}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1><span class="logo">LN</span> Lectures & Notes Portal</h1>
+      <div class="actions">
+        <button class="btn" id="exportAllBtn">Export All Notes</button>
+        <button class="btn" id="clearBtn">Clear Local Data</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="grid">
+      <aside class="sidebar">
+        <h2>Create Lecture</h2>
+        <div class="form-row">
+          <label>Lecture Title</label>
+          <input id="lectureTitle" type="text" placeholder="E.g. Data Structures - Arrays" />
+        </div>
+        <div class="form-row">
+          <label>Lecture Description</label>
+          <textarea id="lectureDesc" placeholder="Short description or summary"></textarea>
+        </div>
+        <div class="form-row">
+          <label>Video Source</label>
+          <select id="videoSource">
+            <option value="youtube">YouTube URL (recommended)</option>
+            <option value="local">Upload Video File (stored locally)</option>
+          </select>
+        </div>
+        <div class="form-row" id="youtubeRow">
+          <label>YouTube / Embed URL</label>
+          <input id="videoURL" type="text" placeholder="https://www.youtube.com/watch?v=... or embed link" />
+        </div>
+        <div class="form-row" id="uploadRow" style="display:none">
+          <label>Upload Video File</label>
+          <input id="videoFile" type="file" accept="video/*" />
+          <div class="small muted">Uploaded files are stored in your browser (IndexedDB). Large files may use a lot of space.</div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:12px">
+          <button class="btn-primary" id="addLectureBtn">Add Lecture</button>
+          <button class="btn-ghost" id="addSample">Add Sample</button>
+        </div>
+
+        <hr style="margin:16px 0" />
+
+        <h3>Quick Note</h3>
+        <div class="form-row">
+          <label>Attach to Lecture</label>
+          <select id="attachLecture"><option value="">(none) — general note</option></select>
+        </div>
+        <div class="form-row">
+          <label>Note Title</label>
+          <input id="noteTitle" type="text" placeholder="Note heading" />
+        </div>
+        <div class="form-row">
+          <label>Note Content</label>
+          <textarea id="noteContent" placeholder="Write notes or summary..."></textarea>
+        </div>
+        <div style="display:flex; gap:10px">
+          <button class="btn-primary" id="addNoteBtn">Save Note</button>
+          <button class="btn-ghost" id="downloadNoteAll">Download All Notes (.txt)</button>
+        </div>
+
+      </aside>
+
+      <section class="main">
+        <div class="searchbar">
+          <input id="searchInput" placeholder="Search lectures, notes or tags..." />
+          <div class="pill" id="stats">0 lectures · 0 notes</div>
+        </div>
+
+        <div id="lecturesContainer" class="cards" aria-live="polite"></div>
+
+        <div>
+          <h3>All Notes</h3>
+          <div id="notesList" class="notes-area"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>Made with care — store sensitive or large files elsewhere for long-term access.</footer>
+
+  <script>
+    // --- Storage helpers: indexedDB for blobs (videos), localStorage for metadata ---
+    const DB_NAME = 'LectureDB_v1';
+    const DB_STORE = 'videos';
+    let db;
+
+    function openDB(){
+      return new Promise((res,rej)=>{
+        const rq = indexedDB.open(DB_NAME,1);
+        rq.onupgradeneeded = e => { db = e.target.result; if(!db.objectStoreNames.contains(DB_STORE)){ db.createObjectStore(DB_STORE,{keyPath:'id', autoIncrement:true}); } };
+        rq.onsuccess = e => { db = e.target.result; res(db); };
+        rq.onerror = e => rej(e);
+      })
+    }
+
+    function storeBlob(blob, meta={}){
+      return new Promise(async (res,rej)=>{
+        if(!db) await openDB();
+        const tx = db.transaction(DB_STORE,'readwrite');
+        const store = tx.objectStore(DB_STORE);
+        const item = Object.assign({}, meta, { blob });
+        const rq = store.add(item);
+        rq.onsuccess = () => res(rq.result);
+        rq.onerror = e => rej(e);
+      })
+    }
+
+    function getBlob(id){
+      return new Promise(async (res,rej)=>{
+        if(!db) await openDB();
+        const tx = db.transaction(DB_STORE,'readonly');
+        const store = tx.objectStore(DB_STORE);
+        const rq = store.get(Number(id));
+        rq.onsuccess = e => res(e.target.result);
+        rq.onerror = e => rej(e);
+      })
+    }
+
+    // --- app state ---
+    let lectures = JSON.parse(localStorage.getItem('lectures')||'[]');
+    let notes = JSON.parse(localStorage.getItem('notes')||'[]');
+
+    // UI references
+    const videoSource = document.getElementById('videoSource');
+    const uploadRow = document.getElementById('uploadRow');
+    const youtubeRow = document.getElementById('youtubeRow');
+    const lectureTitle = document.getElementById('lectureTitle');
+    const lectureDesc = document.getElementById('lectureDesc');
+    const videoURL = document.getElementById('videoURL');
+    const videoFile = document.getElementById('videoFile');
+    const addLectureBtn = document.getElementById('addLectureBtn');
+    const lecturesContainer = document.getElementById('lecturesContainer');
+    const attachLecture = document.getElementById('attachLecture');
+    const addNoteBtn = document.getElementById('addNoteBtn');
+    const noteTitle = document.getElementById('noteTitle');
+    const noteContent = document.getElementById('noteContent');
+    const notesList = document.getElementById('notesList');
+    const stats = document.getElementById('stats');
+    const searchInput = document.getElementById('searchInput');
+    const exportAllBtn = document.getElementById('exportAllBtn');
+    const clearBtn = document.getElementById('clearBtn');
+    const addSample = document.getElementById('addSample');
+    const downloadNoteAll = document.getElementById('downloadNoteAll');
+
+    // toggle source
+    videoSource.addEventListener('change', ()=>{
+      if(videoSource.value === 'local'){ uploadRow.style.display='block'; youtubeRow.style.display='none'; }
+      else{ uploadRow.style.display='none'; youtubeRow.style.display='block'; }
+    });
+
+    // initial DB open
+    openDB().catch(e=>console.warn('indexeddb failed',e));
+
+    // render
+    function refreshUI(){
+      // stats
+      stats.textContent = `${lectures.length} lectures · ${notes.length} notes`;
+
+      // attach select
+      attachLecture.innerHTML = '<option value="">(none) — general note</option>' + lectures.map(l=>`<option value="${l.id}">${escapeHtml(l.title)}</option>`).join('');
+
+      // lectures
+      const q = (searchInput.value||'').toLowerCase();
+      lecturesContainer.innerHTML = '';
+      lectures.slice().reverse().forEach(async l=>{
+        const matches = [l.title, l.desc].join(' ').toLowerCase().includes(q);
+        if(!matches) return;
+
+        const card = document.createElement('article'); card.className='card';
+        const h = document.createElement('h3'); h.innerText = l.title; card.appendChild(h);
+        const meta = document.createElement('div'); meta.className='meta'; meta.innerText = l.desc || '';
+        card.appendChild(meta);
+
+        const vwrap = document.createElement('div'); vwrap.className='video-wrap';
+        if(l.source === 'youtube'){
+          // convert to embed if possible
+          const iframe = document.createElement('iframe'); iframe.setAttribute('loading','lazy'); iframe.setAttribute('allowfullscreen','');
+          iframe.src = youtubeToEmbed(l.src);
+          vwrap.appendChild(iframe);
+        }else if(l.source === 'local'){
+          const placeholder = document.createElement('div'); placeholder.innerText='Loading video...'; vwrap.appendChild(placeholder);
+          // fetch blob and create ObjectURL
+          getBlob(l.blobId).then(rec=>{
+            if(rec && rec.blob){
+              const url = URL.createObjectURL(rec.blob);
+              vwrap.innerHTML = '';
+              const vid = document.createElement('video'); vid.controls = true; vid.src = url; vwrap.appendChild(vid);
+            } else { vwrap.innerText = 'Video not found (it may have been removed)'; }
+          }).catch(e=>{ vwrap.innerText='(error loading video)'; });
+        }
+        card.appendChild(vwrap);
+
+        // actions
+        const actions = document.createElement('div'); actions.className='actions';
+        const btnNote = document.createElement('button'); btnNote.className='btn-ghost'; btnNote.innerText='Add Note';
+        btnNote.onclick = ()=>{ attachLecture.value = l.id; noteTitle.focus(); };
+        const btnDownload = document.createElement('button'); btnDownload.className='btn-ghost'; btnDownload.innerText='Download Video';
+        btnDownload.onclick = async ()=>{
+          if(l.source === 'youtube'){ window.open(l.src,'_blank'); }
+          else if(l.source === 'local'){
+            const rec = await getBlob(l.blobId);
+            if(rec && rec.blob){
+              const a = document.createElement('a'); a.href = URL.createObjectURL(rec.blob); a.download = rec.filename || (l.title + '.mp4'); a.click();
+            } else alert('Video not available');
+          }
+        };
+
+        const btnDel = document.createElement('button'); btnDel.className='btn-ghost'; btnDel.innerText='Delete'; btnDel.onclick = ()=>{ if(confirm('Delete lecture and its notes?')){ deleteLecture(l.id); }};
+        actions.appendChild(btnNote); actions.appendChild(btnDownload); actions.appendChild(btnDel);
+        card.appendChild(actions);
+
+        lecturesContainer.appendChild(card);
+      });
+
+      // notes
+      notesList.innerHTML = '';
+      notes.slice().reverse().forEach(n=>{
+        if(searchInput.value){ const q = searchInput.value.toLowerCase(); const s = [n.title,n.content, n.lectureTitle||''].join(' ').toLowerCase(); if(!s.includes(q)) return; }
+        const div = document.createElement('div'); div.className='note-item';
+        const t = document.createElement('strong'); t.innerText = n.title || '(untitled)'; div.appendChild(t);
+        const meta = document.createElement('div'); meta.className='small muted'; meta.style.margin='6px 0'; meta.innerText = n.lectureTitle? `Attached to: ${n.lectureTitle}` : 'General note'; div.appendChild(meta);
+        const p = document.createElement('div'); p.innerText = n.content; div.appendChild(p);
+        const row = document.createElement('div'); row.style.marginTop='8px'; row.style.display='flex'; row.style.gap='8px';
+        const d = document.createElement('button'); d.className='btn-ghost'; d.innerText='Download'; d.onclick = ()=> downloadNote(n.id);
+        const del = document.createElement('button'); del.className='btn-ghost'; del.innerText='Delete'; del.onclick = ()=>{ if(confirm('Delete note?')) deleteNote(n.id); };
+        row.appendChild(d); row.appendChild(del);
+        div.appendChild(row);
+        notesList.appendChild(div);
+      });
+    }
+
+    // helpers
+    function persist(){ localStorage.setItem('lectures', JSON.stringify(lectures)); localStorage.setItem('notes', JSON.stringify(notes)); }
+    function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    // add lecture
+    addLectureBtn.addEventListener('click', async ()=>{
+      const title = lectureTitle.value.trim(); const desc = lectureDesc.value.trim();
+      if(!title) return alert('Please add a lecture title');
+      if(videoSource.value === 'youtube'){
+        const src = videoURL.value.trim(); if(!src) return alert('Please paste a YouTube/embed URL');
+        const id = uid(); lectures.push({ id, title, desc, source:'youtube', src });
+        persist(); lectureTitle.value=''; lectureDesc.value=''; videoURL.value=''; refreshUI();
+      } else {
+        const file = videoFile.files[0]; if(!file) return alert('Please select a video file to upload');
+        // store blob in indexedDB
+        const blob = file.slice(0,file.size,new Blob());
+        try{
+          const blobId = await storeBlob(file, { filename: file.name, mime: file.type });
+          const id = uid(); lectures.push({ id, title, desc, source:'local', blobId });
+          persist(); lectureTitle.value=''; lectureDesc.value=''; videoFile.value=''; refreshUI();
+        }catch(e){ console.error(e); alert('Failed to save video locally'); }
+      }
+    });
+
+    // delete lecture and related notes
+    function deleteLecture(id){
+      lectures = lectures.filter(l=>l.id!==id);
+      notes = notes.filter(n=>n.lectureId!==id);
+      persist(); refreshUI();
+    }
+
+    // add note
+    addNoteBtn.addEventListener('click', ()=>{
+      const title = noteTitle.value.trim(); const content = noteContent.value.trim(); const lectureId = attachLecture.value || null;
+      if(!title && !content) return alert('Add a note title or some content');
+      const lectureTitleText = lectureId ? (lectures.find(l=>l.id===lectureId)?.title || '') : '';
+      const id = uid(); notes.push({ id, title, content, lectureId, lectureTitle: lectureTitleText, created: new Date().toISOString() });
+      persist(); noteTitle.value=''; noteContent.value=''; attachLecture.value=''; refreshUI();
+    });
+
+    // download single note
+    function downloadNote(id){
+      const n = notes.find(x=>x.id===id); if(!n) return;
+      const text = `Title: ${n.title}\nAttached to: ${n.lectureTitle || '(none)'}\n\n${n.content}`;
+      const blob = new Blob([text], {type:'text/plain'}); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `${(n.title||'note').replace(/\s+/g,'_')}.txt`; a.click();
+    }
+
+    // delete note
+    function deleteNote(id){ notes = notes.filter(n=>n.id!==id); persist(); refreshUI(); }
+
+    // export all notes as a single txt
+    exportAllBtn.addEventListener('click', ()=>{
+      if(notes.length===0) return alert('No notes to export');
+      const parts = notes.map(n=>`--- ${n.title || '(untitled)'} ---\nAttached to: ${n.lectureTitle || '(none)'}\n${n.content}\n\n`);
+      const blob = new Blob([parts.join('\n')], {type:'text/plain'});
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'all_notes.txt'; a.click();
+    });
+
+    // download all notes individually as .txt concatenated
+    downloadNoteAll.addEventListener('click', ()=>{ exportAllBtn.click(); });
+
+    // clear data
+    clearBtn.addEventListener('click', ()=>{
+      if(confirm('This will remove all saved lectures and notes from this browser. Continue?')){
+        localStorage.removeItem('lectures'); localStorage.removeItem('notes'); // clear DB objects
+        // clear IndexedDB
+        const req = indexedDB.deleteDatabase(DB_NAME);
+        req.onsuccess = ()=>{ lectures=[]; notes=[]; persist(); refreshUI(); alert('Cleared'); };
+        req.onerror = ()=>{ alert('Could not fully clear IndexedDB, but local metadata cleared'); lectures=[]; notes=[]; persist(); refreshUI(); };
+      }
+    });
+
+    // search
+    searchInput.addEventListener('input', ()=> refreshUI());
+
+    // sample data
+    addSample.addEventListener('click', ()=>{
+      const id = uid(); lectures.push({ id, title:'Intro to Algorithms', desc:'Basic algorithmic thinking', source:'youtube', src:'https://www.youtube.com/embed/zOjov-2OZ0E' });
+      const id2 = uid(); lectures.push({ id:id2, title:'Java Spring Boot Demo', desc:'Local video upload example (if you upload)', source:'youtube', src:'https://www.youtube.com/embed/9SGDpanrc8U' });
+      notes.push({ id:uid(), title:'Algorithm Summary', content:'Divide and conquer, greedy, DP overview', lectureId:id, lectureTitle:'Intro to Algorithms', created:new Date().toISOString() });
+      persist(); refreshUI();
+    });
+
+    // utilities
+    function youtubeToEmbed(url){
+      if(!url) return '';
+      // if already embed
+      if(url.includes('youtube.com/embed/')) return url;
+      const vidMatch = url.match(/[?&]v=([A-Za-z0-9_-]{6,})/) || url.match(/youtu\.be\/([A-Za-z0-9_-]{6,})/);
+      if(vidMatch) return 'https://www.youtube.com/embed/' + vidMatch[1];
+      // fallback: return the url directly
+      return url;
+    }
+
+    // download note helper
+    function downloadAllNotesAsZip(){ /* optional: implement with JSZip if user requests */ }
+
+    // initial render
+    refreshUI();
+
+    // Expose for debugging
+    window.__LN = { lectures, notes, openDB };
+
+  </script>
+</body>
+</html>

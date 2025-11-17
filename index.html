@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lectures & Notes — Professional Portal</title>
+
+<style>
+/* ALL YOUR EXISTING CSS — No changes made */
+:root{
+  --bg:#f3f6fb; --card:#ffffff; --brand:#0b5fff; --muted:#6b7280; --glass: rgba(11,95,255,0.06);
+  --radius:12px; --gap:18px; --maxw:1100px;
+  font-synthesis: none;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  background: linear-gradient(180deg,#f7f9ff 0%, #f3f6fb 100%); color:#111827; -webkit-font-smoothing:antialiased;
+}
+header{
+  background:linear-gradient(90deg,var(--brand), #2b6cff);
+  color:white; padding:22px 20px; box-shadow:0 6px 22px rgba(11,95,255,0.12);
+}
+header .wrap{max-width:var(--maxw); margin:0 auto; display:flex;gap:12px; align-items:center; justify-content:space-between}
+header h1{font-size:20px; margin:0; display:flex;gap:10px; align-items:center}
+header h1 .logo{background:rgba(255,255,255,0.14); padding:8px 10px; border-radius:8px; font-weight:700}
+header .actions{display:flex; gap:12px; align-items:center}
+header .btn{background:rgba(255,255,255,0.14); color:white; padding:10px 14px; border-radius:10px; border:none; cursor:pointer}
+
+.container{max-width:var(--maxw); margin:28px auto; padding:0 18px}
+
+.grid{display:grid; grid-template-columns:360px 1fr; gap:var(--gap)}
+
+.sidebar{background:var(--card); border-radius:var(--radius); padding:18px; box-shadow:0 6px 18px rgba(12,18,37,0.06)}
+.sidebar h2{margin:2px 0 12px 0}
+.form-row{margin-bottom:12px}
+label{display:block; font-size:13px; color:var(--muted); margin-bottom:6px}
+input[type=text], textarea, select{width:100%; padding:10px 12px; border-radius:10px; border:1px solid #e6eefb; background:#fbfdff}
+textarea{min-height:90px; resize:vertical}
+
+.btn-primary{background:var(--brand); color:white; border:none; padding:10px 14px; border-radius:10px; cursor:pointer}
+.btn-ghost{background:transparent; border:1px solid #e7eefc; color:var(--brand); padding:10px 12px; border-radius:10px; cursor:pointer}
+.muted{color:var(--muted)}
+
+.main{display:flex; flex-direction:column; gap:var(--gap)}
+.searchbar{display:flex; gap:12px; align-items:center}
+.searchbar input{flex:1; padding:12px 14px; border-radius:12px; border:1px solid #e3e9f8}
+
+.cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px}
+.card{background:var(--card); border-radius:12px; padding:14px; box-shadow:0 6px 18px rgba(13,24,50,0.04); display:flex; flex-direction:column}
+.card h3{margin:0 0 8px 0}
+.meta{font-size:13px; color:var(--muted); margin-bottom:8px}
+
+.video-wrap{background:#0f1724; border-radius:10px; overflow:hidden; height:190px; display:flex; align-items:center; justify-content:center}
+
+.notes-area{display:flex; flex-direction:column; gap:12px}
+.note-item{background:#fbfdff; border-radius:10px; padding:10px; border:1px solid #eef5ff}
+
+footer{max-width:var(--maxw); margin:18px auto; padding:18px; color:var(--muted); text-align:center}
+</style>
+
+</head>
+<body>
+
+<!-- ================================ -->
+<!-- 🔐 ADMIN LOGIN SCREEN ADDED HERE -->
+<!-- ================================ -->
+<div id="adminLoginScreen" style="
+  position:fixed; inset:0; background:white; 
+  display:flex; align-items:center; justify-content:center;
+  z-index:9999;">
+  <div style="
+      background:#fff; padding:30px; border-radius:12px;
+      box-shadow:0 6px 20px rgba(0,0,0,0.15); width:300px;">
+    <h2 style="margin-top:0">Admin Login</h2>
+    <input id="adminPasswordInput" type="password" placeholder="Enter admin password"
+      style="width:100%; padding:10px; border-radius:8px; border:1px solid #ddd;">
+    <button id="adminLoginBtn" style="
+        width:100%; margin-top:12px; padding:10px;
+        background:#0b5fff; border:none; border-radius:8px; color:white; cursor:pointer;">
+      Login
+    </button>
+    <p id="adminErr" style="color:red; margin-top:8px;"></p>
+  </div>
+</div>
+<!-- END ADMIN LOGIN -->
+
+
+<header>
+  <div class="wrap">
+    <h1><span class="logo">LN</span> Lectures & Notes Portal</h1>
+    <div class="actions">
+      <button class="btn" id="exportAllBtn">Export All Notes</button>
+      <button class="btn" id="clearBtn">Clear Local Data</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <!-- your UI continues… (NO CHANGES DONE HERE) -->
+  <!-- I kept your full UI identical -->
+  <!-- ------------------------------ -->
+
+  <div class="grid">
+      <aside class="sidebar">
+        <h2>Create Lecture</h2>
+        
+        <div class="form-row">
+          <label>Lecture Title</label>
+          <input id="lectureTitle" type="text" placeholder="E.g. Data Structures - Arrays" />
+        </div>
+
+        <div class="form-row">
+          <label>Lecture Description</label>
+          <textarea id="lectureDesc" placeholder="Short description"></textarea>
+        </div>
+
+        <div class="form-row">
+          <label>Video Source</label>
+          <select id="videoSource">
+            <option value="youtube">YouTube URL</option>
+            <option value="local">Upload Video File</option>
+          </select>
+        </div>
+
+        <div class="form-row" id="youtubeRow">
+          <label>YouTube / Embed URL</label>
+          <input id="videoURL" type="text" placeholder="https://youtube.com/..." />
+        </div>
+
+        <div class="form-row" id="uploadRow" style="display:none">
+          <label>Upload Video File</label>
+          <input id="videoFile" type="file" accept="video/*" />
+        </div>
+
+        <div style="display:flex; gap:10px; margin-top:12px">
+          <button class="btn-primary" id="addLectureBtn">Add Lecture</button>
+          <button class="btn-ghost" id="addSample">Add Sample</button>
+        </div>
+
+        <hr style="margin:16px 0" />
+
+        <h3>Quick Note</h3>
+
+        <select id="attachLecture">
+          <option value="">(none) — general note</option>
+        </select>
+
+        <div class="form-row">
+          <label>Note Title</label>
+          <input id="noteTitle" type="text" placeholder="Note heading" />
+        </div>
+        <div class="form-row">
+          <label>Note Content</label>
+          <textarea id="noteContent" placeholder="Write notes..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:10px">
+          <button class="btn-primary" id="addNoteBtn">Save Note</button>
+          <button class="btn-ghost" id="downloadNoteAll">Download Notes</button>
+        </div>
+
+      </aside>
+
+      <section class="main">
+        <div class="searchbar">
+          <input id="searchInput" placeholder="Search..." />
+          <div class="pill" id="stats">0 lectures · 0 notes</div>
+        </div>
+
+        <div id="lecturesContainer" class="cards"></div>
+
+        <div>
+          <h3>All Notes</h3>
+          <div id="notesList" class="notes-area"></div>
+        </div>
+      </section>
+
+  </div>
+</main>
+
+<footer>Made with care — store sensitive or large files elsewhere.</footer>
+
+<script>
+/* =======================================================
+   🔐 ADMIN LOGIN FUNCTIONALITY ADDED HERE
+   ======================================================= */
+const ADMIN_PASSWORD = "mypassword123";   // CHANGE PASSWORD HERE
+let isAdmin = false;
+
+// Buttons to disable when not admin
+function disableAdminUI(){
+  addLectureBtn.disabled = true;
+  addNoteBtn.disabled = true;
+  clearBtn.disabled = true;
+  addSample.disabled = true;
+}
+
+// Enable after login
+function enableAdminUI(){
+  addLectureBtn.disabled = false;
+  addNoteBtn.disabled = false;
+  clearBtn.disabled = false;
+  addSample.disabled = false;
+}
+
+// On login click
+document.getElementById("adminLoginBtn").onclick = () => {
+  const pwd = document.getElementById("adminPasswordInput").value;
+  if (pwd === ADMIN_PASSWORD) {
+    isAdmin = true;
+    document.getElementById("adminLoginScreen").style.display = "none";
+    enableAdminUI();
+    refreshUI();
+  } else {
+    document.getElementById("adminErr").innerText = "Incorrect password!";
+  }
+};
+
+// Initially disable everything
+window.onload = disableAdminUI;
+
+
+/* ============================
+   YOUR ORIGINAL FULL SCRIPT
+   (no changes except admin check)
+   ============================ */
+
+const DB_NAME = 'LectureDB_v1';
+const DB_STORE = 'videos';
+let db;
+function openDB(){
+  return new Promise((res,rej)=>{
+    const rq = indexedDB.open(DB_NAME,1);
+    rq.onupgradeneeded = e => {
+      db = e.target.result;
+      if(!db.objectStoreNames.contains(DB_STORE)){
+        db.createObjectStore(DB_STORE,{keyPath:'id', autoIncrement:true});
+      }
+    };
+    rq.onsuccess = e => { db = e.target.result; res(db); };
+    rq.onerror = e => rej(e);
+  })
+}
+
+function storeBlob(blob, meta={}){
+  return new Promise(async (res,rej)=>{
+    if(!db) await openDB();
+    const tx = db.transaction(DB_STORE,'readwrite');
+    const store = tx.objectStore(DB_STORE);
+    const item = Object.assign({}, meta, { blob });
+    const rq = store.add(item);
+    rq.onsuccess = () => res(rq.result);
+    rq.onerror = e => rej(e);
+  })
+}
+
+function getBlob(id){
+  return new Promise(async (res,rej)=>{
+    if(!db) await openDB();
+    const tx = db.transaction(DB_STORE,'readonly');
+    const store = tx.objectStore(DB_STORE);
+    const rq = store.get(Number(id));
+    rq.onsuccess = e => res(e.target.result);
+    rq.onerror = e => rej(e);
+  })
+}
+
+let lectures = JSON.parse(localStorage.getItem('lectures')||'[]');
+let notes = JSON.parse(localStorage.getItem('notes')||'[]');
+
+const videoSource = document.getElementById('videoSource');
+const uploadRow = document.getElementById('uploadRow');
+const youtubeRow = document.getElementById('youtubeRow');
+const lectureTitle = document.getElementById('lectureTitle');
+const lectureDesc = document.getElementById('lectureDesc');
+const videoURL = document.getElementById('videoURL');
+const videoFile = document.getElementById('videoFile');
+const addLectureBtn = document.getElementById('addLectureBtn');
+const lecturesContainer = document.getElementById('lecturesContainer');
+const attachLecture = document.getElementById('attachLecture');
+const addNoteBtn = document.getElementById('addNoteBtn');
+const noteTitle = document.getElementById('noteTitle');
+const noteContent = document.getElementById('noteContent');
+const notesList = document.getElementById('notesList');
+const stats = document.getElementById('stats');
+const searchInput = document.getElementById('searchInput');
+const exportAllBtn = document.getElementById('exportAllBtn');
+const clearBtn = document.getElementById('clearBtn');
+const addSample = document.getElementById('addSample');
+const downloadNoteAll = document.getElementById('downloadNoteAll');
+
+videoSource.addEventListener('change', ()=>{
+  uploadRow.style.display = videoSource.value === 'local' ? 'block' : 'none';
+  youtubeRow.style.display = videoSource.value === 'youtube' ? 'block' : 'none';
+});
+
+openDB();
+
+function refreshUI(){
+  stats.textContent = `${lectures.length} lectures · ${notes.length} notes`;
+
+  attachLecture.innerHTML =
+    '<option value="">(none) — general note</option>' +
+    lectures.map(l=>`<option value="${l.id}">${l.title}</option>`).join('');
+
+  const q = (searchInput.value||'').toLowerCase();
+  lecturesContainer.innerHTML = '';
+
+  lectures.slice().reverse().forEach(async l=>{
+    if(!(l.title + l.desc).toLowerCase().includes(q)) return;
+
+    const card = document.createElement('article'); 
+    card.className='card';
+
+    card.innerHTML += `<h3>${l.title}</h3>`;
+    card.innerHTML += `<div class="meta">${l.desc}</div>`;
+
+    const vwrap = document.createElement('div');
+    vwrap.className = 'video-wrap';
+
+    if(l.source === 'youtube'){
+      const iframe = document.createElement('iframe');
+      iframe.src = youtubeToEmbed(l.src);
+      iframe.allowFullscreen = true;
+      vwrap.appendChild(iframe);
+    } else {
+      const rec = await getBlob(l.blobId);
+      if(rec && rec.blob){
+        const vid = document.createElement('video');
+        vid.controls = true;
+        vid.src = URL.createObjectURL(rec.blob);
+        vwrap.appendChild(vid);
+      }
+    }
+    card.appendChild(vwrap);
+
+    const actions = document.createElement('div');
+    actions.className='actions';
+
+    const btnNote = document.createElement('button');
+    btnNote.className='btn-ghost';
+    btnNote.innerText='Add Note';
+    btnNote.onclick = ()=>{ attachLecture.value = l.id; noteTitle.focus(); };
+
+    const btnDownload = document.createElement('button');
+    btnDownload.className='btn-ghost';
+    btnDownload.innerText='Download Video';
+    btnDownload.onclick = async ()=>{
+      if(l.source === 'youtube') window.open(l.src);
+      else{
+        const rec = await getBlob(l.blobId);
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(rec.blob);
+        a.download = rec.filename;
+        a.click();
+      }
+    };
+
+    const btnDel = document.createElement('button');
+    btnDel.className='btn-ghost';
+    btnDel.innerText='Delete';
+    btnDel.onclick = ()=>{ if(isAdmin && confirm('Delete lecture?')) deleteLecture(l.id); };
+
+    if(!isAdmin){
+      btnNote.disabled = true;
+      btnDel.style.display = "none";
+    }
+
+    actions.append(btnNote, btnDownload, btnDel);
+    card.appendChild(actions);
+
+    lecturesContainer.appendChild(card);
+  });
+
+  notesList.innerHTML = '';
+  notes.slice().reverse().forEach(n=>{
+    const div = document.createElement('div'); 
+    div.className='note-item';
+
+    div.innerHTML = `
+      <strong>${n.title}</strong>
+      <div class="small muted">${n.lectureTitle || 'General note'}</div>
+      <div>${n.content}</div>
+    `;
+
+    const row = document.createElement('div');
+    row.style.display='flex'; row.style.gap='8px';
+
+    const d = document.createElement('button');
+    d.className='btn-ghost'; d.innerText='Download';
+    d.onclick = ()=> downloadNote(n.id);
+
+    const del = document.createElement('button');
+    del.className='btn-ghost'; del.innerText='Delete';
+    del.onclick = ()=>{ if(isAdmin && confirm('Delete note?')) deleteNote(n.id); };
+
+    if(!isAdmin) del.style.display = "none";
+
+    row.append(d, del);
+    div.appendChild(row);
+
+    notesList.appendChild(div);
+  });
+}
+
+function persist(){
+  localStorage.setItem('lectures', JSON.stringify(lectures));
+  localStorage.setItem('notes', JSON.stringify(notes));
+}
+
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+
+addLectureBtn.onclick = async()=>{
+  if(!isAdmin) return alert("Admins only!");
+
+  const title = lectureTitle.value.trim();
+  if(!title) return alert("Add title");
+
+  if(videoSource.value === "youtube"){
+    const id = uid();
+    lectures.push({ id, title, desc:lectureDesc.value, source:"youtube", src:videoURL.value });
+    persist();
+    refreshUI();
+  } else {
+    const file = videoFile.files[0];
+    const blobId = await storeBlob(file, {filename:file.name});
+    lectures.push({ id:uid(), title, desc:lectureDesc.value, source:"local", blobId });
+    persist();
+    refreshUI();
+  }
+};
+
+function deleteLecture(id){
+  lectures = lectures.filter(l=>l.id!==id);
+  notes = notes.filter(n=>n.lectureId!==id);
+  persist();
+  refreshUI();
+}
+
+addNoteBtn.onclick = ()=>{
+  if(!isAdmin) return alert("Admins only!");
+
+  const t = noteTitle.value.trim();
+  const c = noteContent.value.trim();
+  const lid = attachLecture.value;
+
+  const ltitle = lid ? lectures.find(l=>l.id===lid)?.title : "(none)";
+
+  notes.push({ id:uid(), title:t, content:c, lectureId:lid, lectureTitle:ltitle });
+  persist();
+  refreshUI();
+};
+
+function deleteNote(id){
+  notes = notes.filter(n=>n.id!==id);
+  persist();
+  refreshUI();
+}
+
+function downloadNote(id){
+  const n = notes.find(x=>x.id===id);
+  const blob = new Blob([n.content], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = n.title + ".txt";
+  a.click();
+}
+
+exportAllBtn.onclick = ()=>{
+  let full = notes.map(n=>`${n.title}\n${n.content}\n\n`).join("");
+  const blob = new Blob([full],{type:"text/plain"});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = "all_notes.txt";
+  a.click();
+};
+
+clearBtn.onclick = ()=>{
+  if(!isAdmin) return alert("Admins only!");
+  if(confirm("Clear all data?")){
+    localStorage.clear();
+    indexedDB.deleteDatabase(DB_NAME);
+    lectures=[]; notes=[];
+    refreshUI();
+  }
+};
+
+searchInput.oninput = refreshUI;
+
+addSample.onclick = ()=>{
+  if(!isAdmin) return alert("Admins only!");
+  lectures.push({ id:uid(), title:"Intro to Algo", desc:"Basics", source:"youtube", src:"https://www.youtube.com/embed/zOjov-2OZ0E" });
+  persist();
+  refreshUI();
+};
+
+function youtubeToEmbed(url){
+  if(url.includes("embed")) return url;
+  const m = url.match(/v=([^&]+)/) || url.match(/youtu.be\/([^?]+)/);
+  return m ? "https://www.youtube.com/embed/" + m[1] : url;
+}
+
+refreshUI();
+
+</script>
+
+</body>
+</html>
